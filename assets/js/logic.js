@@ -25,6 +25,7 @@ submitBtn.addEventListener('click', submitScore);
 let questionIndex = 0;
 let resultTimeoutID;
 let score = 0;
+let timeAllowance = 180;
 let remainingSeconds;
 let scoreObj = {
   score: '',
@@ -72,7 +73,6 @@ function loadNextQuestion(result) {
   feedback.classList.remove('hide')
   if (result) {
     feedbackTxt.textContent = 'Correct!'
-    score++;
   } else {
     feedbackTxt.textContent = 'Incorrect!'
   }
@@ -89,6 +89,7 @@ function checkAns(event) {
   // Compare to current question
   if (ans == questions[questionIndex].answer) {
     questionIndex++;
+    score++;
     loadNextQuestion(true)
   } else {
     questionIndex++;
@@ -107,18 +108,16 @@ function endQuiz() {
 
   // Add values to score object
   scoreObj.score = score;
-  scoreObj.time = remainingSeconds;
+  scoreObj.time = timeAllowance - remainingSeconds;
 }
 
 function submitScore() {
-  // Validate initials input
   let scores;
   let userInitials = initials.value;
-  let regex = /^[a-zA-Z]{1,3}$/; // Credit - https://www.geeksforgeeks.org/javascript-program-to-check-if-a-string-contains-only-alphabetic-characters/
   
-  // Input contained invalid characters
+  // Validate initials input
+  let regex = /^[a-zA-Z]{1,3}$/; // Credit - https://www.geeksforgeeks.org/javascript-program-to-check-if-a-string-contains-only-alphabetic-characters/
   if (!regex.test(userInitials)) {
-    // TODO # Tell user it must be alphanumeric characters only
     alert('Initials must be between 1 - 3 characters, and only use alphabet characters')
     return
   }
@@ -146,9 +145,6 @@ function submitScore() {
 
 // Control the timer function with a countdown from 180 seconds
 function countdown() {
-  // Define total allowed time
-  let totalSeconds = 180;
-
   // Get current data to use as frame of reference
   let startTime = Date.now();
 
@@ -157,7 +153,7 @@ function countdown() {
     let elapsedTime = Date.now() - startTime;
 
     // Convert into seconds and store in global object for use in scoring later
-    remainingSeconds = totalSeconds - Math.floor(elapsedTime / 1000);
+    remainingSeconds = timeAllowance - Math.floor(elapsedTime / 1000);
 
     if (questionIndex >= questions.length) {
       // User has finished quiz, stop timer in current place
