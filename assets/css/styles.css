@@ -81,10 +81,29 @@ li:nth-child(odd) {
   border-top: 2px solid #ccc;
 }
 
-.timer {
+#timer {
   position: absolute;
   top: 10px;
   right: 10px;
+}
+
+.penalty {
+  color: red;
+  position: absolute;
+  right: 0px;
+  animation: 1s forwards fadeOut;
+}
+
+
+@keyframes fadeOut {
+ from {
+  top: 1.5rem;
+  opacity: 1;
+ } 
+ to {
+  top: 2.5rem;
+  opacity: 0;
+ }
 }
 
 hr {

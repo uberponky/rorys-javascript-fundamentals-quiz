@@ -9,16 +9,10 @@ clear.addEventListener('click', clearScores)
 let highscores = localStorage.getItem('scores');
 highscores = JSON.parse(highscores);
 highscores.sort((a, b) => {
-  if (a.score > b.score) {
+  if (a.time < b.time) {
     return -1;
-  }
-  if (a.score < b.score) {
-    return 1;
   }
   if (a.time > b.time) {
-    return -1;
-  }
-  if (a.time < b.time) {
     return 1;
   }
   if (highscores.indexOf(a) > highscores.indexOf(b)) {
@@ -30,7 +24,7 @@ highscores.sort((a, b) => {
 highscores.forEach((highscore) => {
   let score = document.createElement('li')
   let denomination = (highscore.time == '1') ? 'second' : 'seconds';
-  score.innerHTML = `${highscore.initials} - ${highscore.score} <span style="color:grey">${highscore.time} ${denomination}</span>`;
+  score.innerHTML = `${highscore.initials} - ${highscore.time} ${denomination}`;
   highscoresList.appendChild(score);
 })
 

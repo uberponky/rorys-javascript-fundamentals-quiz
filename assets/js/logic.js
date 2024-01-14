@@ -13,9 +13,12 @@ const choices = document.getElementById('choices');
 const feedback = document.getElementById('feedback');
 const feedbackTxt = document.getElementById('feedback-txt');
 const initials = document.getElementById('initials');
+const time = document.getElementById('time');
+const timer = document.getElementById('timer');
 
-// Get UI elements
-const timer = document.getElementById('time');
+// Get audio elements
+const audioCorrect = new Audio('./assets/sfx/correct.wav');
+const audioIncorrect = new Audio('./assets/sfx/incorrect.wav');
 
 // Add event listeners
 startBtn.addEventListener('click', startQuiz);
@@ -24,11 +27,10 @@ submitBtn.addEventListener('click', submitScore);
 // Declare global vars
 let questionIndex = 0;
 let resultTimeoutID;
-let score = 0;
-let timeAllowance = 180;
+let penalty = 0;
+let timeAllowance = 90;
 let remainingSeconds;
 let scoreObj = {
-  score: '',
   time: '',
   initials: ''
 }
@@ -39,10 +41,29 @@ function startQuiz() {
   questionsScreen.classList.remove('hide')    // Show questions screen
   loadNextQuestion();                         // Load first question
   countdown();                                // Begin timer
+  timer.classList.remove('hide');             // Unhide timer
 }
 
 // Hide existing question and load next question
 function loadNextQuestion(result) {
+  // Load feedback from previous question
+  if (questionIndex != 0) {
+    // Clear existing timeout if user answered question in under alloted timeout time
+    clearTimeout(resultTimeoutID);
+    
+    // Display feedback from previous question
+    feedback.classList.remove('hide')
+    if (result) {
+      feedbackTxt.textContent = 'Correct!'
+    } else {
+      feedbackTxt.textContent = 'Incorrect!'
+    }
+
+    // Set up timer to hide feedback after 1 second
+    resultTimeoutID = setTimeout(() => {feedback.classList.add('hide')}, 1500)
+  }
+  
+
   // If there are no more questions, load end screen
   if (questionIndex >= questions.length) {
     endQuiz()
@@ -62,23 +83,6 @@ function loadNextQuestion(result) {
     el.onclick = checkAns;                        // <button onclick='checkAns' data-index="{index}"> {answer} </button>
     choices.appendChild(el);                      // <div id='choices' ... > <button ...> ... </button> </div>
   })
-
-  // Skip remaining code if on first question
-  if (questionIndex == 0) return;   
-
-  // Clear existing timeout if user answered question in under 1 second
-  clearTimeout(resultTimeoutID);
-  
-  // Display feedback from previous question
-  feedback.classList.remove('hide')
-  if (result) {
-    feedbackTxt.textContent = 'Correct!'
-  } else {
-    feedbackTxt.textContent = 'Incorrect!'
-  }
-
-  // Set up timer to hide feedback after 1 second
-  resultTimeoutID = setTimeout(() => {feedback.classList.add('hide')}, 1500)
 }
 
 function checkAns(event) {
@@ -89,10 +93,12 @@ function checkAns(event) {
   // Compare to current question
   if (ans == questions[questionIndex].answer) {
     questionIndex++;
-    score++;
+    audioCorrect.play();
     loadNextQuestion(true)
   } else {
     questionIndex++;
+    deductTime();
+    audioIncorrect.play();
     loadNextQuestion(false)
   }
 }
@@ -107,7 +113,6 @@ function endQuiz() {
   endScreen.append(feedback);
 
   // Add values to score object
-  scoreObj.score = score;
   scoreObj.time = timeAllowance - remainingSeconds;
 }
 
@@ -153,7 +158,7 @@ function countdown() {
     let elapsedTime = Date.now() - startTime;
 
     // Convert into seconds and store in global object for use in scoring later
-    remainingSeconds = timeAllowance - Math.floor(elapsedTime / 1000);
+    remainingSeconds = timeAllowance - Math.floor(elapsedTime / 1000) - penalty;
 
     if (questionIndex >= questions.length) {
       // User has finished quiz, stop timer in current place
@@ -165,12 +170,12 @@ function countdown() {
       let formattedTime = Math.floor(remainingSeconds / 60).toString().padStart(2, "0") + ":" + (remainingSeconds % 60).toString().padStart(2, "0");
 
       // Set text on timer element
-      timer.textContent = formattedTime;
+      time.textContent = formattedTime;
 
       // Request the next update using browsers repaint function
       requestAnimationFrame(updateTimer);
     } else {
-      timer.textContent = '00:00'
+      time.textContent = '00:00'
       timeUp()
     }
   }
@@ -182,4 +187,20 @@ function countdown() {
 // End quiz with no score
 function timeUp() {
 
+}
+
+// Deduct 10 seconds and display on browser
+function deductTime() {
+  penalty += 10;
+
+  // Create penalty element
+  let penaltyEl = document.createElement('div');
+  penaltyEl.classList.add('penalty');
+  penaltyEl.textContent = '-10';
+  timer.appendChild(penaltyEl);
+
+  // Delete after 1 seconds
+  setTimeout(() => {
+    penaltyEl.remove();
+  }, 1000)
 }

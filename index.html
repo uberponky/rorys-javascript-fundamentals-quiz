@@ -12,7 +12,9 @@
   <body>
     <div class="scores"><a href="highscores.html">View Highscores</a></div>
 
-    <div class="timer">Time: <span id="time">0</span></div>
+    <div id="timer" class="hide">
+      Time: <span id="time">0</span>
+    </div>
 
     <div class="wrapper">
       <div id="start-screen" class="start">
@@ -42,8 +44,7 @@
           <button id="submit">Submit</button>
         </p>
       </div>
-
-      <div id="feedback" class="feedback hide"></div>
+      
     </div>
 
     <script src="./assets/js/questions.js"></script>
