@@ -15,6 +15,7 @@ const feedbackTxt = document.getElementById('feedback-txt');
 const initials = document.getElementById('initials');
 const time = document.getElementById('time');
 const timer = document.getElementById('timer');
+const finalScore = document.getElementById('final-score');
 
 // Get audio elements
 const audioCorrect = new Audio('./assets/sfx/correct.wav');
@@ -38,7 +39,7 @@ let scoreObj = {
 // One time function used to start quiz and begin countdown timer
 function startQuiz() {
   startScreen.classList.add('hide');          // Hide start screen
-  questionsScreen.classList.remove('hide')    // Show questions screen
+  questionsScreen.classList.remove('hide');   // Show questions screen
   loadNextQuestion();                         // Load first question
   countdown();                                // Begin timer
   timer.classList.remove('hide');             // Unhide timer
@@ -54,24 +55,24 @@ function loadNextQuestion(result) {
     // Display feedback from previous question
     feedback.classList.remove('hide')
     if (result) {
-      feedbackTxt.textContent = 'Correct!'
+      feedbackTxt.textContent = 'Correct!';
     } else {
-      feedbackTxt.textContent = 'Incorrect!'
+      feedbackTxt.textContent = 'Incorrect!';
     }
 
     // Set up timer to hide feedback after 1 second
-    resultTimeoutID = setTimeout(() => {feedback.classList.add('hide')}, 1500)
+    resultTimeoutID = setTimeout(() => {feedback.classList.add('hide')}, 1500);
   }
   
 
   // If there are no more questions, load end screen
   if (questionIndex >= questions.length) {
-    endQuiz()
-    return
+    endQuiz();
+    return;
   }
 
   // Load in questions title from global array defined in questions.js
-  questionObj = questions[questionIndex]
+  questionObj = questions[questionIndex];
   questionTitle.innerHTML = questionObj.title; 
 
   // Clear existing and load new answers
@@ -105,15 +106,19 @@ function checkAns(event) {
 
 // One time function to end quiz
 function endQuiz() {
+  // Ensure score does not go below 0
+  remainingSeconds = Math.max(remainingSeconds, 0);
+
   // Load end screen
   questionsScreen.classList.add('hide');
   endScreen.classList.remove('hide');
+  finalScore.textContent = remainingSeconds;
 
   // Move feedback element into end-screen to show user last item of feedback
   endScreen.append(feedback);
 
   // Add values to score object
-  scoreObj.time = timeAllowance - remainingSeconds;
+  scoreObj.time = remainingSeconds;
 }
 
 function submitScore() {
@@ -186,7 +191,7 @@ function countdown() {
 
 // End quiz with no score
 function timeUp() {
-
+  endQuiz();
 }
 
 // Deduct 10 seconds and display on browser

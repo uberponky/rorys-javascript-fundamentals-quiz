@@ -9,10 +9,10 @@ clear.addEventListener('click', clearScores)
 let highscores = localStorage.getItem('scores');
 highscores = JSON.parse(highscores);
 highscores.sort((a, b) => {
-  if (a.time < b.time) {
+  if (a.time > b.time) {
     return -1;
   }
-  if (a.time > b.time) {
+  if (a.time < b.time) {
     return 1;
   }
   if (highscores.indexOf(a) > highscores.indexOf(b)) {
