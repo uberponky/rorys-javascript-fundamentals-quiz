@@ -30,6 +30,8 @@ let questionIndex = 0;
 let resultTimeoutID;
 let penalty = 0;
 let timeAllowance = 90;
+let elapsedTime = 0;
+let startTime = 0;
 let remainingSeconds;
 let scoreObj = {
   time: '',
@@ -87,38 +89,41 @@ function loadNextQuestion(result) {
 }
 
 function checkAns(event) {
-  console.log(questionIndex)
   // Get index of selected answer
   let ans = event.target.dataset.index;
 
   // Compare to current question
   if (ans == questions[questionIndex].answer) {
-    questionIndex++;
     audioCorrect.play();
+    questionIndex++;
     loadNextQuestion(true)
   } else {
-    questionIndex++;
     deductTime();
     audioIncorrect.play();
+    questionIndex++;
     loadNextQuestion(false)
   }
 }
 
 // One time function to end quiz
 function endQuiz() {
-  // Ensure score does not go below 0
-  remainingSeconds = Math.max(remainingSeconds, 0);
+    // Run update timer one more time to ensure score is correct
+    updateTimer()
 
-  // Load end screen
-  questionsScreen.classList.add('hide');
-  endScreen.classList.remove('hide');
-  finalScore.textContent = remainingSeconds;
+    // Ensure score does not go below 0
+    remainingSeconds = Math.max(remainingSeconds, 0);
 
-  // Move feedback element into end-screen to show user last item of feedback
-  endScreen.append(feedback);
+    // Load end screen
+    questionsScreen.classList.add('hide');
+    endScreen.classList.remove('hide');
+    finalScore.textContent = remainingSeconds;
 
-  // Add values to score object
-  scoreObj.time = remainingSeconds;
+    // Move feedback element into end-screen to show user last item of feedback
+    endScreen.append(feedback);
+
+    // Add time to score object
+    scoreObj.time = remainingSeconds;
+    console.log(`Score obj: ${penalty}`)
 }
 
 function submitScore() {
@@ -156,47 +161,46 @@ function submitScore() {
 // Control the timer function with a countdown from 180 seconds
 function countdown() {
   // Get current data to use as frame of reference
-  let startTime = Date.now();
-
-  function updateTimer() {
-    // Calculate remaining time in seconds
-    let elapsedTime = Date.now() - startTime;
-
-    // Convert into seconds and store in global object for use in scoring later
-    remainingSeconds = timeAllowance - Math.floor(elapsedTime / 1000) - penalty;
-
-    if (questionIndex >= questions.length) {
-      // User has finished quiz, stop timer in current place
-      return
-    }
-
-    if (remainingSeconds >= 0) {
-      // Format the time as MM:SS
-      let formattedTime = Math.floor(remainingSeconds / 60).toString().padStart(2, "0") + ":" + (remainingSeconds % 60).toString().padStart(2, "0");
-
-      // Set text on timer element
-      time.textContent = formattedTime;
-
-      // Request the next update using browsers repaint function
-      requestAnimationFrame(updateTimer);
-    } else {
-      time.textContent = '00:00'
-      timeUp()
-    }
-  }
+  startTime = Date.now();
 
   // Start the countdown
   updateTimer();
 }
 
-// End quiz with no score
-function timeUp() {
-  endQuiz();
+function updateTimer() {
+  // Calculate remaining time in seconds
+  elapsedTime = Date.now() - startTime;
+
+  // Convert into seconds and store in global object for use in scoring later
+  remainingSeconds = timeAllowance - Math.floor(elapsedTime / 1000) - penalty;
+
+  // Format the time as MM:SS
+  let formattedTime = Math.floor(remainingSeconds / 60).toString().padStart(2, "0") + ":" + (remainingSeconds % 60).toString().padStart(2, "0");
+
+  if (questionIndex >= questions.length) {
+    // User has finished quiz, stop timer in current place
+    time.textContent = formattedTime;
+    return
+  }
+
+  if (remainingSeconds >= 0) {
+    // Set text on timer element
+    time.textContent = formattedTime;
+
+    // Request the next update using browsers repaint function
+    requestAnimationFrame(updateTimer);
+  } else {
+    time.textContent = '00:00'
+    endQuiz();
+  }
+
+  
 }
 
 // Deduct 10 seconds and display on browser
 function deductTime() {
   penalty += 10;
+  console.log(`penalty: ${penalty}`)
 
   // Create penalty element
   let penaltyEl = document.createElement('div');
