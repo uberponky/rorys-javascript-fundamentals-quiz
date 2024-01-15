@@ -145,7 +145,7 @@ function submitScore() {
   }
 
   // Redirect to highscores page
-  window.location.href = "/highscores.html";
+  window.location.href = "rorys-javascript-fundamentals-quiz/highscores.html";
 }
 
 // Control the timer function with a countdown from 180 seconds
