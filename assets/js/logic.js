@@ -26,6 +26,7 @@ startBtn.addEventListener('click', startQuiz);
 submitBtn.addEventListener('click', submitScore);
 
 // Declare global vars
+let endFlag = false;
 let questionIndex = 0;
 let resultTimeoutID;
 let penalty = 0;
@@ -108,10 +109,8 @@ function checkAns(event) {
 // One time function to end quiz
 function endQuiz() {
     // Run update timer one more time to ensure score is correct
-    updateTimer()
-
-    // Ensure score does not go below 0
-    remainingSeconds = Math.max(remainingSeconds, 0);
+    endFlag = true;
+    updateTimer();
 
     // Load end screen
     questionsScreen.classList.add('hide');
@@ -123,7 +122,6 @@ function endQuiz() {
 
     // Add time to score object
     scoreObj.time = remainingSeconds;
-    console.log(`Score obj: ${penalty}`)
 }
 
 function submitScore() {
@@ -158,7 +156,7 @@ function submitScore() {
   window.location.href = "/highscores.html";
 }
 
-// Control the timer function with a countdown from 180 seconds
+// Control the timer function with a countdown
 function countdown() {
   // Get current data to use as frame of reference
   startTime = Date.now();
@@ -172,35 +170,30 @@ function updateTimer() {
   elapsedTime = Date.now() - startTime;
 
   // Convert into seconds and store in global object for use in scoring later
-  remainingSeconds = timeAllowance - Math.floor(elapsedTime / 1000) - penalty;
+  remainingSeconds = Math.max(timeAllowance - Math.floor(elapsedTime / 1000) - penalty, 0);
 
   // Format the time as MM:SS
   let formattedTime = Math.floor(remainingSeconds / 60).toString().padStart(2, "0") + ":" + (remainingSeconds % 60).toString().padStart(2, "0");
 
-  if (questionIndex >= questions.length) {
+  // Set timer
+  time.textContent = formattedTime;
+
+  if (questionIndex >= questions.length || endFlag) {
     // User has finished quiz, stop timer in current place
-    time.textContent = formattedTime;
     return
   }
 
-  if (remainingSeconds >= 0) {
-    // Set text on timer element
-    time.textContent = formattedTime;
-
+  if (remainingSeconds > 0) {
     // Request the next update using browsers repaint function
     requestAnimationFrame(updateTimer);
   } else {
-    time.textContent = '00:00'
     endQuiz();
   }
-
-  
 }
 
 // Deduct 10 seconds and display on browser
 function deductTime() {
   penalty += 10;
-  console.log(`penalty: ${penalty}`)
 
   // Create penalty element
   let penaltyEl = document.createElement('div');
